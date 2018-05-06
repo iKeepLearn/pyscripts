@@ -9,8 +9,7 @@ def getText(text):
 
 
 filepath = input('please input the file path:')
-filename = os.path.basename(filepath)
-wordtxt = getText(filename)
+wordtxt = getText(filepath)
 words = wordtxt.split()
 counts = {}
 for word in words:

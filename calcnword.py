@@ -10,8 +10,7 @@ def getText(text):
 
 
 filepath = input('please input the file path:')
-filename = os.path.basename(filepath)
-wordtxt = getText(filename)
+wordtxt = getText(filepath)
 words = jieba.lcut(wordtxt)
 counts = {}
 for word in words:
