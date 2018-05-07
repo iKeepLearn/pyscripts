@@ -8,7 +8,7 @@ csvTitle = t.readline().split(',')
 vcfTitle = []
 n = 0
 for i in csvTitle:
-    vcfTitle.append(input('please input {} convert to cvf file field name,enter to ignore:'.format(csvTitle[n])))
+    vcfTitle.append(input('please input {} convert to[tel,address,name],enter to ignore:'.format(csvTitle[n])))
     n = n + 1
 
 t.seek(0)
@@ -23,8 +23,12 @@ while f != counts:
     for i in vcfTitle:
         if i =='':
             pass
-        else:
-            vcfFile.write(i.upper()+':'+csvls[vcfTitle.index(i)]+'\n')
+        elif i.upper()=='TEL':
+            vcfFile.write('TEL;CELL'+':'+csvls[vcfTitle.index(i)]+'\n')
+        elif i.upper()=='ADDRESS':
+            vcfFile.write('ADR'+':'+csvls[vcfTitle.index(i)]+'\n')
+        elif i.upper()=='NAME':
+            vcfFile.write('FN'+':'+csvls[vcfTitle.index(i)]+'\n')
     vcfFile.write('END:VCARD'+'\n')
     f = f + 1
 t.close()
