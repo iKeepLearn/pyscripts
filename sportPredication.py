@@ -28,7 +28,7 @@ def simOneGame(probA,probB):
     while not gameOver(scoreA,scoreB):
         if serving == 'A':
             if random() < probA:
-                scoreA += 1 
+                scoreA += 1
             else:
                 serving = 'B'
         else:
