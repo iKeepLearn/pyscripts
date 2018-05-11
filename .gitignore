@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 *.txt
 *.doc
+101.py
