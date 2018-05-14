@@ -8,13 +8,12 @@
     </head>
     <body>
         <div class="container">
-        <div class="alert alert-primary" role="alert">请输入需要抓取的网页地址</div>
         <form action="",method="post">
             {{ form.hidden_tag() }}
             <p>
             <div class="form-group">
             {{ form.url.label }}
-            {{ form.url(class="form-control",placeholder="www.v2ex.com",) }}<br>
+            {{ form.url(class="form-control",placeholder="请输入网页地址，比如：www.v2ex.com",value="www.v2ex.com") }}<br>
             {% for error in form.url.errors %}
             <span style="color:red;">[{{ error }}]</span>
             {% endfor %}
