@@ -12,7 +12,8 @@ class Webscrapy():
             return urladd.text
         except:
             return ''
-    def getVideoList(lst,url):
+    def getVideoList(url):
+        lst = []
         html = getHTMLText(url)
         soup = BeautifulSoup(html,'html.parser')
         a = soup.find_all('a')
@@ -23,7 +24,8 @@ class Webscrapy():
             except:
                 continue
 
-    def getVideoList(lst,url):
+    def getVideoList(url):
+        lst = []
         html = getHTMLText(url)
         soup = BeautifulSoup(html,'html.parser')
         a = soup.find_all('a')
@@ -34,7 +36,8 @@ class Webscrapy():
             except:
                 continue
 
-    def getImageList(lst,url):
+    def getImageList(url):
+        lst = []
         html = getHTMLText(url)
         soup = BeautifulSoup(html,'html.parser')
         a = soup.find_all('a')
