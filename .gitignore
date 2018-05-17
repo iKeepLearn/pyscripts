@@ -107,3 +107,6 @@ venv.bak/
 101.py
 Pipfile
 Pipfile.lock
+*.jpg
+*.gif
+img
