@@ -8,7 +8,7 @@ def strip_tags(html):
 	dd=dd.replace('&amp;','&')
 	return dd
 
-class Zhihu:
+class Zhihu(object):
 
 	status=0
 	headers={
@@ -58,7 +58,7 @@ class Zhihu:
 		url="https://www.zhihu.com/api/v4/search_v3?t=general&q="+q+"&correction=1&offset=0&limit=40&search_hash_id="
 
 		r=requests.get(url,headers=self.headers).content
-		r=json.loads(r)
+		r=json.loads(str(r))
 
 		if 'data' not in r:
 			print(r)
@@ -86,7 +86,7 @@ class Zhihu:
 		url='https://www.zhihu.com/api/v4/questions/'+qid+'/answers?sort_by=default&include=data[*].is_normal,admin_closed_comment,reward_info,is_collapsed,annotation_action,annotation_detail,collapse_reason,is_sticky,collapsed_by,suggest_edit,comment_count,can_comment,content,editable_content,voteup_count,reshipment_settings,comment_permission,created_time,updated_time,review_info,relevant_info,question,excerpt,relationship.is_authorized,is_author,voting,is_thanked,is_nothelp;data[*].mark_infos[*].url;data[*].author.follower_count,badge[?(type=best_answerer)].topics&limit=1000&offset=0'
 		r=requests.get(url,headers=self.headers).content
 		try:
-			r=json.loads(r)['data']
+			r=json.loads(str(r))['data']
 		except:
 			print('get answer error')
 			return
