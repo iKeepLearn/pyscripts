@@ -6,8 +6,12 @@ import os
 
 def getHTMLText(url):
     headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"}
-    r = requests.get(url,headers=headers)
-    return r.text
+    try:
+        r = requests.get(url,headers=headers)
+        r.raise_for_status()
+        return r.text
+    except requests.exceptions.RequestException as e:
+        print(e)
 
 def getURLList(html):
     soup = BeautifulSoup(html,'html.parser')
@@ -15,8 +19,9 @@ def getURLList(html):
     img = soup.find_all('img')
     for i in img:
         try:
-            href = i.attrs['src']
-            lst.append(href)
+            #href = i.attrs['src'] or i.attrs['data-src']
+            if i['src']:lst.append(i.get('src'))
+            if i['data-src']:lst.append(i.get('data-src'))
         except:
             continue
     return lst
@@ -31,13 +36,18 @@ def download(lst,filepath='img'):
         headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"}
         filename = filepath +'/' + url.split('/')[-1]
         with open(filename,'wb') as f :
-            img = requests.get(url,headers=headers)
-            print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
-            filenow += 1
-            f.write(img.content)
-            f.flush()
-            f.close()
-            print("{} saved".format(filename))
+            try:
+                img = requests.get(url,headers=headers)
+                img.raise_for_status()
+                print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
+                filenow += 1
+                f.write(img.content)
+                f.flush()
+                f.close()
+                print("{} saved".format(filename))
+            except requests.exceptions.RequestException as e:
+                print(e)
+                continue
 
 
 if __name__ == '__main__':
