@@ -2,17 +2,20 @@
 
 from PIL import Image
 import os
+import sys
 import http.server
 import socketserver
 import re
 
 def generateThumb(file):
-    im = Image.open(file)
-    im.thumbnail((190,90),Image.ANTIALIAS)
-    im.save("thumb_" + file)
-    thumbfilename = "thumb_" + file
-    return thumbfilename
-
+    try:
+        im = Image.open(file)
+        im.thumbnail((190,90),Image.ANTIALIAS)
+        im.save("thumb_" + file)
+        thumbfilename = "thumb_" + file
+        return thumbfilename
+    except:
+        return
 
 def scanPath(path='.'):
     IMAGE_FILE_REGEX = '^.+\.(png|jpg|jpeg|tif|tiff|gif|bmp)$'
@@ -24,11 +27,14 @@ def scanPath(path='.'):
 def generateHTML(imglist,imgthumblist):
     with open('div.html','w') as f:
         for x,y in zip(imglist,imgthumblist):
-            f.write('<div data-p="170.00">' + '\n')
-            f.write('<img data-u="image" src=' + '"' + x +'"' +'/>' + '\n')
-            f.write('<img data-u="image" src=' + '"' + y +'"' +'/>' + '\n')
-            f.write('</div>' + '\n')
-            #f.write('fuck' + '\n')
+            try:
+                f.write('<div data-p="170.00">' + '\n')
+                f.write('<img data-u="image" src=' + '"' + x +'"' +'/>' + '\n')
+                f.write('<img data-u="image" src=' + '"' + y +'"' +'/>' + '\n')
+                f.write('</div>' + '\n')
+                #f.write('fuck' + '\n')
+            except:
+                pass
     f.close()
     filenames = ['htmlhead.html','div.html','htmlfoot.html']
     with open('simplegalleryserver.html','w') as sgs:
@@ -49,7 +55,8 @@ def run_server():
     
 
 if __name__ == '__main__':
-    imglist = scanPath()
+    path = sys.argv[-1]
+    imglist = scanPath(path)
     imgthumblist = []
     for i in imglist:
         imgthumblist.append(generateThumb(i))
