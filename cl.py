@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -26,14 +25,19 @@ def download(lst,filepath='img'):
     if not os.path.isdir(filepath):
         os.makedirs(filepath)
 
+    filecounter = len(lst)
+    filenow = 1
     for url in lst:
         headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"}
         filename = filepath +'/' + url.split('/')[-1]
         with open(filename,'wb') as f :
             img = requests.get(url,headers=headers)
+            print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
+            filenow += 1
             f.write(img.content)
             f.flush()
             f.close()
+            print("{} saved".format(filename))
 
 
 if __name__ == '__main__':
