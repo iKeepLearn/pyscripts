@@ -1,50 +1,62 @@
+#!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
 import requests
-from bs4 import BeautifulSoup
+import re
+import os
 
 class Webscrapy():
-    def getHTMLText(url,code='utf-8'):
+    def getHTMLText(self,url):
+        headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"}
         try:
-            urladd = requests.get(url)
-            urladd.raise_for_status()
-            urladd.encoding = code
-            return urladd.text
-        except:
-            return ''
-    def getVideoList(url):
-        lst = []
-        html = getHTMLText(url)
-        soup = BeautifulSoup(html,'html.parser')
-        a = soup.find_all('a')
-        for i in a:
+            r = requests.get(url,headers=headers)
+            r.raise_for_status()
+            return r.text
+        except requests.exceptions.RequestException as e:
+            print(e)
+
+    def getImageList(self,html):
+        regex = r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)"
+        #lst = []
+        matches = re.finditer(regex, html, re.MULTILINE)
+        for x,y in enumerate(matches):
             try:
-                href = i.attrs['href']
-                lst.append(re.findall(r"(avi|mpg|mpe|mpeg|asf|wmv|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv)",href))
+                yield str(y.group())
             except:
                 continue
-
-    def getVideoList(url):
-        lst = []
-        html = getHTMLText(url)
-        soup = BeautifulSoup(html,'html.parser')
-        a = soup.find_all('a')
-        for i in a:
+        #return sorted(set(lst),key = lst.index)
+    def getVideoList(self,html):
+        regex = r"(http(s?):)([/|.|\w|\s|-])*\.(?:avi|mpg|mpe|mpeg|asf|wmv|mov|qt|rm|mp4|flv|m4v|webm|ogv|ogg|mkv)"
+        #lst = []
+        matches = re.finditer(regex, html, re.MULTILINE)
+        for x,y in enumerate(matches):
             try:
-                href = i.attrs['href']
-                lst.append(re.findall(r"(mp3|wav|wma|mpa|ram|ra|aac|aif|m4a)",href))
+                yield str(y.group())
             except:
                 continue
-
-    def getImageList(url):
-        lst = []
-        html = getHTMLText(url)
-        soup = BeautifulSoup(html,'html.parser')
-        a = soup.find_all('a')
-        for i in a:
+        #return sorted(set(lst),key = lst.index)
+    def getAudioList(self,html):
+        regex = r"(http(s?):)([/|.|\w|\s|-])*\.(?:mp3|wav|wma|mpa|ram|ra|aac|aif|m4a)"
+        #lst = []
+        matches = re.finditer(regex, html, re.MULTILINE)
+        for x,y in enumerate(matches):
             try:
-                href = i.attrs['href']
-                lst.append(re.findall(r"(png|jpg|gif)",href))
+                yield str(y.group())
             except:
                 continue
+        #return sorted(set(lst),key = lst.index)
 
+    def saveList(self,url,filepath='tmp'):
+        if not os.path.isdir(filepath):
+            os.makedirs(filepath)
+        html = getHTMLText(url)
+        filename = os.path.join(filepath,url.split('/')[2])
+        with open(filename,'w') as f:
+            for i in getImageList(html):
+                f.write(i + '\n')
+            for i in getVideoList(html):
+                f.write(i + '\n')
+            for i in getAudioList(html):
+                f.write(i + '\n')
+            f.flush()
+            f.close()
