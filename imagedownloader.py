@@ -34,9 +34,9 @@ def download(lst,filepath='img'):
         filename = filepath +'/' + url.split('/')[-1]
         with open(filename,'wb') as f :
             try:
+                print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
                 img = requests.get(url,headers=headers)
                 img.raise_for_status()
-                print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
                 filenow += 1
                 f.write(img.content)
                 f.flush()
