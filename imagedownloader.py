@@ -34,7 +34,7 @@ def download(lst,filepath='img'):
         headers = {"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36"}
         filename = filepath +'/' + url.split('/')[-1]
         if os.path.isfile(filename):
-            filename = os.path.dirname(filename) + str(random.randint(1,1000)) + os.path.basename(filename)
+            filename = os.path.join(os.path.dirname(filename),str(random.randint(1,1000)) + os.path.basename(filename))
         with open(filename,'wb') as f :
             try:
                 print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
