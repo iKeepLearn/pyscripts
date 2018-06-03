@@ -6,12 +6,15 @@ def walktree(top,callback):
     for f in os.listdir(top):
         pathname = os.path.join(top,f)
         mode = os.stat(pathname).st_mode
-        if S_ISDIR(mode):
-            walktree(pathname,callback)
-        elif S_ISREG(mode):
-            callback(pathname)
-        else:
-            print('Skipping %s' % pathname)
+        try:
+            if S_ISDIR(mode):
+                walktree(pathname,callback)
+            elif S_ISREG(mode):
+                callback(pathname)
+            else:
+                print('Skipping %s' % pathname)
+        except:
+            continue
 
 def checkpermission(file):
     global mod
