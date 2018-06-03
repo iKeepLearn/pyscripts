@@ -14,8 +14,14 @@ def walktree(top,callback):
             print('Skipping %s' % pathname)
 
 def checkpermission(file):
-    print(file,oct(os.stat(file)[ST_MODE])[-3:])
+    global mod
+    if oct(os.stat(file)[ST_MODE])[-3:] == mod:
+        print(file,oct(os.stat(file)[ST_MODE])[-3:])
+
+
 
 
 if __name__ == '__main__':
-    walktree('/home/san/pypractice',checkpermission)
+    path = input('please input path:')
+    mod = input('please input you want check files mod(e.g 777):')
+    walktree(path,checkpermission)
