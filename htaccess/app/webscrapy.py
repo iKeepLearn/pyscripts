@@ -49,14 +49,14 @@ class Webscrapy():
     def saveList(self,url,filepath='tmp'):
         if not os.path.isdir(filepath):
             os.makedirs(filepath)
-        html = getHTMLText(url)
+        html = self.getHTMLText(url)
         filename = os.path.join(filepath,url.split('/')[2])
         with open(filename,'w') as f:
-            for i in getImageList(html):
+            for i in self.getImageList(html):
                 f.write(i + '\n')
-            for i in getVideoList(html):
+            for i in self.getVideoList(html):
                 f.write(i + '\n')
-            for i in getAudioList(html):
+            for i in self.getAudioList(html):
                 f.write(i + '\n')
             f.flush()
             f.close()
