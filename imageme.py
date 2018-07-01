@@ -308,15 +308,6 @@ def _get_index_file_path(location):
     """
     return os.path.join(location, INDEX_FILE_NAME)
 
-def _get_server_port():
-    """
-    Get the port specified for the server to run on. If given as the first
-    command line argument, we'll use that. Else we'll default to 8000.
-
-    @return {Integer} The port to run the server on. Default 8000, overridden
-        by first command line argument.
-    """
-    return int(sys.argv[1]) if len(sys.argv) >= 2 else 8100
 
 def _get_src_from_image(img, fallback_image_file):
     """
@@ -425,7 +416,7 @@ def _run_server():
     @return {None}
     """
     # Get the port to run on
-    port = _get_server_port()
+    port = 8100
     # Configure allow_reuse_address to make re-runs of the script less painful -
     # if this is not True then waiting for the address to be freed after the
     # last run can block a subsequent run
