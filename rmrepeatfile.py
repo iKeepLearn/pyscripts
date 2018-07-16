@@ -37,6 +37,7 @@ def insert_hash_table(file):
 
 def scan_files(dir_path):
     for root,dirs,files in os.walk(dir_path):
+        print('create hash table for {} files ...'.format(root))
         for file in files:
             filename = os.path.join(root,file)
             insert_hash_table(filename)
@@ -45,7 +46,7 @@ def del_repeat_file(dir_path):
     conn = sqlite3.connect('filehash.db')
     c = conn.cursor()
     for root,dirs,files in os.walk(dir_path):
-        print('scanning {} ...'.format(root))
+        print('scan repeat files {} ...'.format(root))
         for file in files:
             filename = os.path.join(root,file)
             md5 = md5sum(filename)
