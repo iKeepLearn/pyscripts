@@ -483,7 +483,7 @@ def cleanup(dir_path):
     for root,dirs,files in os.walk(dir_path):
         for file in files:
             filename = os.path.join(root,file)
-            if file == "imageme.html":
+            if file == "image.html":
                 print("Removing {}".format(filename))
                 os.unlink(filename)
 if __name__ == '__main__':
