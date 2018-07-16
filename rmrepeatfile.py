@@ -8,10 +8,14 @@ import sys
 
 def md5sum(file):
     md5_hash = hashlib.md5()
-    with open(file,"rb") as f:
-        for byte_block in iter(lambda:f.read(65536),b""):
-            md5_hash.update(byte_block)
-    return md5_hash.hexdigest()
+    try:
+        with open(file,"rb") as f:
+            for byte_block in iter(lambda:f.read(65536),b""):
+                md5_hash.update(byte_block)
+        return md5_hash.hexdigest()
+    except IOError as e:
+        print(e)
+        pass
 
 def create_hash_table():
     if os.path.isfile('filehash.db'):
@@ -20,8 +24,8 @@ def create_hash_table():
     c = conn.cursor()
     c.execute('''CREATE TABLE FILEHASH
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
-            FILE TEXT NOT NULL,
-            HASH TEXT NOT NULL);''')
+            FILE TEXT ,
+            HASH TEXT );''')
     conn.commit()
     c.close()
     conn.close()
