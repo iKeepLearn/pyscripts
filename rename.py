@@ -5,10 +5,12 @@ import os,sys
 def rename(path):
     for root,dirs,files in os.walk(path):
         for file in files:
-            print(file)
-            if file.endswith('.torrent'):
-                newname = file[0:-28] + file[-8:]
-                os.rename(file,newname)
+            if file.endswith('.jpg') or file.endswith('.gif'):
+                newname = file[0:-4] + '101' + file[-4:]
+                oldname = os.path.join(root,file)
+                newname = os.path.join(root,newname)
+                os.rename(oldname,newname)
+                print('{} -> {}'.format(oldname,newname))
 
 
 
