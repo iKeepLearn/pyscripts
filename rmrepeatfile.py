@@ -32,6 +32,7 @@ def create_hash_table():
 
 def insert_hash_table(file):
     conn = sqlite3.connect('filehash.db')
+    conn.text_factory = str
     c = conn.cursor()
     md5 = md5sum(file)
     c.execute("INSERT INTO FILEHASH (FILE,HASH) VALUES (?,?);",(file,md5))
