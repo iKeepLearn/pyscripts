@@ -68,13 +68,38 @@ def del_repeat_file(dir_path):
     conn.close()
     print('removed total {} files.'.format(removed))
 
+def write_to_file():
+    conn = sqlite3.connect('filehash.db')
+    c = conn.cursor()
+    c.execute('select * from FILEHASH;')
+    rows = c.fetchall()
+    with open('filehash.txt','w') as f:
+        for row in rows:
+            line = str(row).replace('(','')
+            line = line.replace(')','')
+            line = line.replace('u','')
+            line = line.replace("'","")
+            line = line.replace(',','|')
+            f.write(line + '\n')
+    c.close()
+    conn.close()
+    f.close()
+    print('Your file md5 hash in filehash.txt')
 
 
 def main():
     dir_path = sys.argv[-1]
-    create_hash_table()
-    scan_files(dir_path)
-    del_repeat_file(dir_path)
+    cmd = sys.argv[-2]
+    if cmd == "scan":
+        create_hash_table()
+        scan_files(dir_path)
+        write_to_file()
+    elif cmd == "del":
+        create_hash_table()
+        scan_files(dir_path)
+        del_repeat_file(dir_path)
+    else:
+        print("usage: scan|del dirpath")
 
 if __name__ == '__main__':
     main()
