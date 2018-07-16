@@ -45,17 +45,22 @@ def del_repeat_file(dir_path):
     conn = sqlite3.connect('filehash.db')
     c = conn.cursor()
     for root,dirs,files in os.walk(dir_path):
+        print('scanning {} ...'.format(root))
         for file in files:
             filename = os.path.join(root,file)
             md5 = md5sum(filename)
             c.execute('select * from FILEHASH where HASH=?;',(md5,))
             total = c.fetchall()
+            removed = 0
             if len(total) >= 2:
                 os.unlink(filename)
-                c.execute('delete from FILEHASH where HASH=?;',(md5,))
+                removed += 1
+                print('{} removed'.format(filename))
+                c.execute('delete from FILEHASH where HASH=? and FILE=?;',(md5,filename))
                 conn.commit()
 
     conn.close()
+    print('removed total {} files.'.format(removed))
 
 
 
