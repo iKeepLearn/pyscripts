@@ -17,12 +17,12 @@ pip install requests
 
 ## rmrepeatfile.py
  
-   ``` shell
+   ```shell
    python rmrepeatfile.py scan|del dir
    ```
 
 ## imagegallery.py
 
-    ``` shell
+    ```shell
     python imagegallery.py create|server|clean dir
     ```
