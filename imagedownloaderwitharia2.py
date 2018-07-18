@@ -3,6 +3,7 @@ import requests
 import random
 import re
 import sys
+import pipes
 import os
 import getopt
 
@@ -37,7 +38,7 @@ def download(lst,filepath='img'):
         if os.path.isfile(filename):
             filename = str(random.randint(1,1000)) + filename
         print("Downloading {}/{} file name:{}".format(filenow,filecounter,filename.split('/')[-1]))
-        os.system('aria2c ' + '-o ' + filename + ' ' + url + ' -d ' + filepath)
+        os.system('aria2c ' + '-o ' + pipes.quote(filename) + ' ' + url + ' -d ' + filepath)
         filenow += 1
 def usage():
     print("Usage:")
