@@ -31,7 +31,7 @@ except ImportError:
 ## Filename of the generated index files
 INDEX_FILE_NAME = 'image.html'
 ## Regex for matching only image files
-IMAGE_FILE_REGEX = '^.+\.(png|jpg|jpeg|tif|tiff|gif|bmp)$'
+IMAGE_FILE_REGEX = '^.+\.(png|jpg|jpeg|tif|tiff|gif|bmp|webp)$'
 ## Images per row of the gallery tables
 IMAGES_PER_ROW = 3
 ## Resampling mode to use when thumbnailing
