@@ -8,8 +8,9 @@ def move_mp4(dir_path,target_path):
             if file.endswith('.mp4') or file.endswith('.MP4'):
                 source_file = os.path.join(root,file)
                 target_file = os.path.join(target_path,file)
-                shutil.move(source_file,target_file)
-                print('{} -> {}'.format(source_file,target_file))
+                if source_file != target_file
+                    shutil.move(source_file,target_file)
+                    print('{} -> {}'.format(source_file,target_file))
 
 if __name__ == '__main__':
     dir_path = sys.argv[-2]
