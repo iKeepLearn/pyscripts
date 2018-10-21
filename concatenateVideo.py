@@ -5,7 +5,6 @@ import os
 import sys
 
 def getFileList(path):
-    path = os.path.abspath(path)
     fileListTmp = os.listdir(path)
     fileList = []
     for i in fileListTmp:
@@ -21,10 +20,10 @@ def getFileList(path):
     return txt
 
 def main():
-    path = sys.argv[-1]
+    path = os.path.abspath(sys.argv[-1])
     txt = getFileList(path)
-    outFileName = os.path.abspath(path).split('/')[-1] + '.mp4'
-    output = os.path.join(os.path.abspath(path),outFileName)
+    outFileName = path.split('/')[-1] + '.mp4'
+    output = os.path.join(path,outFileName)
     os.system('ffmpeg -f concat -safe 0 -i ' + txt + ' -c copy ' + output)
     print('Your video file at {}'.format(output))
     os.system('rm ' + txt)
