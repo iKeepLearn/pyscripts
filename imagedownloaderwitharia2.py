@@ -17,7 +17,7 @@ def getHTMLText(url):
         print(e)
 
 def getURLList(html):
-    regex = r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)"
+    regex = r"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|JPG|GIF|PNG)"
     lst = []
     matches = re.finditer(regex, html, re.MULTILINE)
     for x,y in enumerate(matches):
