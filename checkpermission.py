@@ -1,30 +1,25 @@
-#!/usr/bin/env python
-import os, sys
+#!/usr/bin/env python3
+
+import click
+import os
 from stat import *
 
-def walktree(top,callback):
-    for f in os.listdir(top):
-        pathname = os.path.join(top,f)
-        mode = os.stat(pathname).st_mode
-        try:
-            if S_ISDIR(mode):
-                walktree(pathname,callback)
-            elif S_ISREG(mode):
-                callback(pathname)
-            else:
-                print('Skipping %s' % pathname)
-        except:
-            continue
-
-def checkpermission(file):
-    global mod
-    if oct(os.stat(file)[ST_MODE])[-3:] == mod:
+def check_file(file,mod):
+    if oct(os.stat(file)[ST_MODE])[-3:] == str(mod):
         print(file,oct(os.stat(file)[ST_MODE])[-3:])
 
-
+@click.command()
+@click.argument('path')
+@click.option('--mod','-m',help="The file mode " )
+def checkpermission(path,mod=777):
+    for root,dirs,files in os.walk(path):
+        for file in files:
+            try:
+                file = os.path.join(root,file)
+                check_file(file,mod)
+            except:
+                continue
 
 
 if __name__ == '__main__':
-    path = input('please input path:')
-    mod = input('please input you want check files mod(e.g 777):')
-    walktree(path,checkpermission)
+    checkpermission()
