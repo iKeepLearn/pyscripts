@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
 
-import sqlite3
+import click
 import os,sys
-import imaplib
+import sqlite3
+import ssl,socket
 import time
 from datetime import datetime
-import ssl,socket
 
 DB = 'domain.db'
 SEND_EMAIL = 'youremail@domain'
@@ -76,12 +76,17 @@ def get_ssl_info(domain):
 
     return sslinfo
 
+
+@click.command("add",short_help="add domain")
+@click.argument("domain")
 def add_domain(domain):
     if not os.path.isfile(DB):
         create_domain_table()
     sslinfo = get_ssl_info(domain)
     insert_domain_table(sslinfo)
 
+@click.command("del",short_help="delete domain")
+@click.argument("domain")
 def del_domain(domain):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -89,6 +94,8 @@ def del_domain(domain):
     conn.commit()
     c.close()
     conn.close()
+
+
 def get_domain_info(domain):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -98,6 +105,9 @@ def get_domain_info(domain):
     conn.close()
     return domainInfo
 
+
+@click.command("output",short_help="output the ssl status to /path/to/name.html")
+@click.argument("htmlfile",type=click.File('w'),default="sslstatus.html")
 def generation_html_file(htmlfile):
     html = [
            ' <!DOCTYPE html>',
@@ -162,29 +172,28 @@ def generation_html_file(htmlfile):
             '</body>',
             '</html>',
             ]
-    if not htmlfile:
-        htmlfile = open('sslstatus.html','w')
-    htmlfile = open(htmlfile,'w')
     htmlfile.write('\n'.join(html))
-    htmlfile.close()
 
-def send_alert_email(msg):
+def send_alert_email(msg,email):
     from email.mime.text import MIMEText
 
     import smtplib
 
     msg = MIMEText(msg,'plain','utf-8')
     msg['From'] = SEND_EMAIL
-    msg['To'] = RECEIVE_EMAIL
+    msg['To'] = email
     msg['Subject'] = 'SSL Alert'
 
     server = smtplib.SMTP(SMTP_SERVER,587)
     server.starttls()
     server.login(SEND_EMAIL,PASSWORD)
-    server.sendmail(SEND_EMAIL,[RECEIVE_EMAIL],msg.as_string())
+    server.sendmail(SEND_EMAIL,[email],msg.as_string())
     server.quit()
+    print("The email send to {}.".format(email))
 
-def get_expired_domain():
+@click.command("email",short_help="send alert email")
+@click.argument("email",default=RECEIVE_EMAIL)
+def get_expired_domain(email):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute('select * from DOMAIN')
@@ -196,35 +205,21 @@ def get_expired_domain():
         if i[5] < ALERT_DAYS:
             msg = msg + '    ' +i[2] + '    remain    ' + str(i[5]) + ' Days'
     if not msg:
-        send_alert_email(msg)
-
-
-def usage():
-    print('''Usage:
-            add|del domain "add or remove the domain for  monitoring"
-            output /path/to/html "output the ssl status to assigned html file"
-            email "send email"''')
-
-def main():
-    argc = len(sys.argv)
-    exitcode = 0
-    if argc < 2:
-        usage()
-        exitcode = 1
+        send_alert_email(msg,email)
     else:
-        if sys.argv[1] == 'add':
-            add_domain(sys.argv[2])
-        elif sys.argv[1] == 'del':
-            del_domain(sys.argv[2])
-        elif sys.argv[1] == 'email':
-            get_expired_domain()
-        elif sys.argv[1] == 'output':
-            htmlfile  = sys.argv[2]
-            generation_html_file(htmlfile)
-        else:
-            usage()
-            exitcode = 1
-    sys.exit(exitcode)
+        print("No Domain has been expired")
+
+
+
+@click.group()
+def main():
+    pass
+
+main.add_command(get_expired_domain)
+main.add_command(add_domain)
+main.add_command(del_domain)
+main.add_command(generation_html_file)
+
 if __name__ == '__main__':
     main()
 
