@@ -54,20 +54,6 @@ class BackgroundIndexFileGenerator:
     def run(self):
         self.thread.start()
 
-def _clean_up(paths):
-    """
-    Clean up after ourselves, removing created files.
-
-    @param {[String]} A list of file paths specifying the files we've created
-        during run. Will all be deleted.
-
-    @return {None}
-    """
-    print('Cleaning up')
-    # Iterate over the given paths, unlinking them
-    for path in paths:
-        print('Removing %s' % path)
-        os.unlink(path)
 
 def _create_index_file(
         root_dir, location, image_files, dirs, force_no_processing=False):
@@ -470,22 +456,24 @@ def serve_dir(dir_path):
         background_indexer.run()
     # Run the server in the current location - this blocks until it's stopped
     _run_server()
-    # Clean up the index files created earlier so we don't make a mess of
-    # the image directories
-    _clean_up(created_files)
+
 def create(dir_path):
+
     _create_index_files(dir_path,True)
     if (PIL_ENABLED):
         print('Performing PIL-enchanced optimised index file generation in background')
         background_indexer = BackgroundIndexFileGenerator(dir_path)
         background_indexer.run()
+
 def cleanup(dir_path):
+    
     for root,dirs,files in os.walk(dir_path):
         for file in files:
             filename = os.path.join(root,file)
             if file == "image.html":
                 print("Removing {}".format(filename))
                 os.unlink(filename)
+
 if __name__ == '__main__':
     # Generate indices and serve from the current directory downwards when run
     # as the entry point
