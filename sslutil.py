@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding:utf-8 -*-
 
+import re
 import click
 import os,sys
 import sqlite3
@@ -43,8 +44,19 @@ def insert_domain_table(sslinfo):
     c.close()
     conn.close()
 
+
+def is_domain(domain):
+    is_domain = False
+    regex = r'(^[0-9a-zA-Z][0-9a-zA-Z_]+)\.([a-zA-Z]+)'
+    is_domain = bool(re.match(regex,str(domain)))
+    if not is_domain:
+        print("{} is not a domain".format(domain))
+    return is_domain
+
+
 def get_ssl_info(domain):
     server_name = domain
+    print("get ssl information for {}".format(domain))
     sslinfo = {}
 
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -76,23 +88,23 @@ def get_ssl_info(domain):
     return sslinfo
 
 def add_from_file(file):
-    if not os.path.isfile(DB):
-        create_domain_table()
     with open(file,'r') as f:
         for i in f.readlines():
-            sslinfo = get_ssl_info(i)
-            insert_domain_table(sslinfo)
+            if is_domain(i):
+                sslinfo = get_ssl_info(i.strip())
+                insert_domain_table(sslinfo)
 
 @click.command("add",short_help="add domain")
 @click.option("--file","-f",type=click.Path(),default=None)
 @click.argument("domain",required=False)
 def add_domain(domain,file):
-    if file:
-        add_from_file(file)
     if not os.path.isfile(DB):
         create_domain_table()
-    sslinfo = get_ssl_info(domain)
-    insert_domain_table(sslinfo)
+    if file:
+        add_from_file(file)
+    else:
+        sslinfo = get_ssl_info(domain)
+        insert_domain_table(sslinfo)
 
 @click.command("del",short_help="delete domain")
 @click.argument("domain")
@@ -213,10 +225,8 @@ def get_expired_domain(email):
     conn.close()
     msg = ' '
     for i in domain:
-        remain = i[5] - time.time()
-        remain = round(remain/86400)
         if i[5] < ALERT_DAYS:
-            msg = msg + '    ' +i[2] + '    remain    ' + str(remain) + ' Days'
+            msg = msg + '    ' +i[2] + '    remain    ' + str(i[5]) + ' Days'
     if not msg:
         send_alert_email(msg,email)
     else:
