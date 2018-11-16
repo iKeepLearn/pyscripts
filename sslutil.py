@@ -213,8 +213,10 @@ def get_expired_domain(email):
     conn.close()
     msg = ' '
     for i in domain:
+        remain = i[5] - time.time()
+        remain = round(remain/86400)
         if i[5] < ALERT_DAYS:
-            msg = msg + '    ' +i[2] + '    remain    ' + str(i[5]) + ' Days'
+            msg = msg + '    ' +i[2] + '    remain    ' + str(remain) + ' Days'
     if not msg:
         send_alert_email(msg,email)
     else:
