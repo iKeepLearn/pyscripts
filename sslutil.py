@@ -24,7 +24,7 @@ def create_domain_table():
             domain TEXT,
             s_time TEXT,
             e_time TEXT,
-            remain INT );''')
+            remain DATE );''')
     conn.commit()
     c.close()
     conn.close()
@@ -59,8 +59,7 @@ def get_ssl_info(domain):
     cert = s.getpeercert()
 
     e_time = ssl.cert_time_to_seconds(cert['notAfter'])
-    remain = e_time - time.time()
-    remain = round(remain/86400)
+    remain = e_time
     e_time = datetime.utcfromtimestamp(e_time)
 
     s_time = ssl.cert_time_to_seconds(cert['notBefore'])
@@ -76,10 +75,20 @@ def get_ssl_info(domain):
 
     return sslinfo
 
+def add_from_file(file):
+    if not os.path.isfile(DB):
+        create_domain_table()
+    with open(file,'r') as f:
+        for i in f.readlines():
+            sslinfo = get_ssl_info(i)
+            insert_domain_table(sslinfo)
 
 @click.command("add",short_help="add domain")
-@click.argument("domain")
-def add_domain(domain):
+@click.option("--file","-f",type=click.Path(),default=None)
+@click.argument("domain",required=False)
+def add_domain(domain,file):
+    if file:
+        add_from_file(file)
     if not os.path.isfile(DB):
         create_domain_table()
     sslinfo = get_ssl_info(domain)
@@ -142,6 +151,8 @@ def generation_html_file(htmlfile):
     c.close()
     conn.close()
     for i in domain:
+        remain = i[5] - time.time()
+        remain = round(remain/86400)
         html += [
                 '<div class="service header align_center">',
                 '<div class="flex_column">',
@@ -149,7 +160,7 @@ def generation_html_file(htmlfile):
                 '<p class="small raven_gray">last check:  ' + i[1] + '</p>',
                 '<p class="small raven_gray">issue date:  ' + i[3] + '</p>',
                 '<p class="small raven_gray">expire date: ' + i[4] + '</p>',
-                '<p class="small raven_gray">remain:      ' + str(i[5]) + ' Days' + '</p>',
+                '<p class="small raven_gray">remain:      ' + str(remain) + ' Days' + '</p>',
                 '</div>',
                 '</div>',
                 ]
