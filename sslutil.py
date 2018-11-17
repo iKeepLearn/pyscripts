@@ -7,6 +7,7 @@ import os,sys
 import sqlite3
 import ssl,socket
 import time
+from pprint import pprint
 from datetime import datetime
 
 DB = 'domain.db'
@@ -22,7 +23,7 @@ def create_domain_table():
     c.execute('''CREATE TABLE DOMAIN
             (ID INTEGER PRIMARY KEY AUTOINCREMENT,
             check_time TEXT,
-            domain TEXT,
+            domain TEXT UNIQUE,
             s_time TEXT,
             e_time TEXT,
             remain DATE );''')
@@ -31,19 +32,20 @@ def create_domain_table():
     conn.close()
 
 def insert_domain_table(sslinfo):
-    conn = sqlite3.connect(DB)
-    conn.text_factory = str
-    c = conn.cursor()
-    check_time = sslinfo['check_time']
-    domain = sslinfo['domain']
-    s_time = sslinfo['s_time']
-    e_time = sslinfo['e_time']
-    remain = sslinfo['remain']
-    c.execute("INSERT INTO DOMAIN (check_time,domain,s_time,e_time,remain) VALUES(?,?,?,?,?);",(check_time,domain,s_time,e_time,remain))
-    conn.commit()
-    c.close()
-    conn.close()
-
+    if sslinfo:
+        conn = sqlite3.connect(DB)
+        conn.text_factory = str
+        c = conn.cursor()
+        check_time = sslinfo['check_time']
+        domain = sslinfo['domain']
+        s_time = sslinfo['s_time']
+        e_time = sslinfo['e_time']
+        remain = sslinfo['remain']
+        c.execute("REPLACE INTO DOMAIN (check_time,domain,s_time,e_time,remain) VALUES(?,?,?,?,?);",(check_time,domain,s_time,e_time,remain))
+        conn.commit()
+        c.close()
+        conn.close()
+        print("insert ssl information for {}".format(domain))
 
 def is_domain(domain):
     is_domain = False
@@ -65,27 +67,31 @@ def get_ssl_info(domain):
     context.load_default_certs()
 
     s = socket.socket()
+    s.settimeout(5)
     s = context.wrap_socket(s,server_hostname=server_name)
-    s.connect((server_name,443))
-    s.do_handshake()
-    cert = s.getpeercert()
+    try:
+        s.connect((server_name,443))
+        s.do_handshake()
+        cert = s.getpeercert()
 
-    e_time = ssl.cert_time_to_seconds(cert['notAfter'])
-    remain = e_time
-    e_time = datetime.utcfromtimestamp(e_time)
+        e_time = ssl.cert_time_to_seconds(cert['notAfter'])
+        remain = e_time
+        e_time = datetime.utcfromtimestamp(e_time)
 
-    s_time = ssl.cert_time_to_seconds(cert['notBefore'])
-    s_time = datetime.utcfromtimestamp(s_time)
+        s_time = ssl.cert_time_to_seconds(cert['notBefore'])
+        s_time = datetime.utcfromtimestamp(s_time)
 
-    check_time = datetime.utcnow()
+        check_time = datetime.utcnow()
 
-    sslinfo['check_time'] = str(check_time)
-    sslinfo['domain'] = server_name
-    sslinfo['s_time'] = str(s_time)
-    sslinfo['e_time'] = str(e_time)
-    sslinfo['remain'] = remain
+        sslinfo['check_time'] = str(check_time)
+        sslinfo['domain'] = server_name
+        sslinfo['s_time'] = str(s_time)
+        sslinfo['e_time'] = str(e_time)
+        sslinfo['remain'] = remain
 
-    return sslinfo
+        return sslinfo
+    except socket.timeout:
+        print("TimeOut")
 
 def add_from_file(file):
     with open(file,'r') as f:
@@ -117,14 +123,21 @@ def del_domain(domain):
     conn.close()
 
 
+@click.command("query",short_help="query domain")
+@click.argument("domain",required=False)
 def get_domain_info(domain):
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    domainInfo = c.execute('select * from DOMAIN where domain=?;',(domain,))
-    domainInfo = domainInfo.fetchone()
+    if domain:
+        domainInfo = c.execute('select * from DOMAIN where domain=?;',(domain,))
+        domainInfo = domainInfo.fetchone()
+    else:
+        domainInfo = c.execute('select * from DOMAIN')
+        domainInfo = domainInfo.fetchall()
+
     c.close()
     conn.close()
-    return domainInfo
+    pprint(domainInfo)
 
 
 @click.command("output",short_help="output the ssl status to /path/to/name.html")
@@ -238,9 +251,10 @@ def get_expired_domain(email):
 def main():
     pass
 
-main.add_command(get_expired_domain)
 main.add_command(add_domain)
 main.add_command(del_domain)
+main.add_command(get_domain_info)
+main.add_command(get_expired_domain)
 main.add_command(generation_html_file)
 
 if __name__ == '__main__':
