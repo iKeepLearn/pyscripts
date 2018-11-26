@@ -84,8 +84,9 @@ class NexusPHP(object):
                     'imagehash':imagehash,
                     'username':username,
                     'passowrd':password}
-        r = self.session.post(url,playload,timeout=6)
-        logging.info('get {} code {}'.format(url,str(r.status_code)))
+        if len(imagestring) == 6:
+            r = self.session.post(url,playload,timeout=6)
+            logging.info('get {} code {}'.format(url,str(r.status_code)))
         return self.is_logged_in(r)
 
     def _get_login_imagestring(self):
