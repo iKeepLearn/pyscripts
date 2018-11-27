@@ -86,7 +86,7 @@ class HDHome(object):
         return self.is_logged_in(r)
 
 
-    def _get_login_imagehash(self):
+    def _get_login_captcha(self):
         url = 'https://hdhome.org/login.php'
         r = self.session.get(url,timeout=6)
         soup = BeautifulSoup(r.text,"html.parser")
