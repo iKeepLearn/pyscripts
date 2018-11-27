@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 
 logging.basicConfig(filename='ptsign.log',filemode='a',level=logging.INFO,format='%(asctime)s - %(message)s',datefmt='%d-%b-%y %H:%M:%S')
 
-class PreImage(object):
+class CaptchaParse(object):
 
     def __init__(self,image):
         self.image = Image.open(image).convert('L')
@@ -78,38 +78,37 @@ class NexusPHP(object):
 
     def login(self,username,password):
         url=urljoin(self.url,'takelogin.php')
-        imagestring = self._get_login_imagestring()
-        imagehash = self._get_login_imagehash()
+        imagestring = self._get_login_captcha()[0]
+        imagehash = self._get_login_captcha()[1]
         playload = {'imagestrig':imagestring,
                     'imagehash':imagehash,
                     'username':username,
-                    'passowrd':password}
+                    'password':password}
         if len(imagestring) == 6:
             r = self.session.post(url,playload,timeout=6)
             logging.info('get {} code {}'.format(url,str(r.status_code)))
         return self.is_logged_in(r)
 
-    def _get_login_imagestring(self):
+
+    def _get_login_captcha(self):
         url = urljoin(self.url,'login.php')
         r = self.session.get(url,timeout=6)
         soup = BeautifulSoup(r.text,"html.parser")
+
+
         img = soup.find_all("img")
         for i in img:
             if 'image' in i['src']:
                 imgurl = urljoin(self.url,i['src'])
         image = self.session.get(imgurl)
         image = BytesIO(image.content)
-        image = PreImage(image)
-        return image.to_string()
+        image = CaptchaParse(image)
+        imagestring = image.to_string()
 
-    def _get_login_imagehash(self):
-        url = urljoin(self.url,'login.php')
-        r = self.session.get(url,timeout=6)
-        soup = BeautifulSoup(r.text,"html.parser")
         imagehash = soup.find("input",{"name":"imagehash"})
         assert imagehash and imagehash['value'],"there is no imagehash on this page"
         logging.info('imagehash: {}'.format(imagehash['value']))
-        return imagehash['value']
+        return (imagestring,imagehash['value'])
 
     def is_logged_in(self,r):
         url=urljoin(self.url,'index.php')
