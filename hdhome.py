@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 
 logging.basicConfig(filename='hdhome.log',filemode='a',level=logging.INFO,format='%(asctime)s - %(message)s',datefmt='%d-%b-%y %H:%M:%S')
 
-class CaptchaParse(object):
+class PreImage(object):
 
     def __init__(self,image):
         self.image = Image.open(image).convert('L')
@@ -25,6 +25,7 @@ class CaptchaParse(object):
                     pixdata[x, y] = 0
                 else:
                     pixdata[x, y] = 255
+        self.image.save('temp.png')
         return self.image
 
     def delete_point(self):
@@ -51,11 +52,12 @@ class CaptchaParse(object):
                     count = count + 1
                 if count > 6:
                     pixdata[x,y] = 255
+        self.image.save('temp.png')
         return self.image
 
     def to_string(self):
 
-        regex = r"[\'\"\*~!@#$%^&\+\\n\\r;:,\ \_\-\)\(’‘“”]"
+        regex = r"[\'\"\*~!@#$%^&\+\\n\\r;:,\\\/\ \_\-\)\(’‘“”]"
 
         image = self.image_to_bin()
         image = self.delete_point()
@@ -74,49 +76,50 @@ class HDHome(object):
         self.session.headers.update({'origin':'https://hdhome.org'})
         self.session.headers.update({'referer':'https://hdhome.org/login.php'})
 
-    def login(self,username,password,url='https://hdhome.org/takelogin.php'):
-        imagestring = self._get_login_captcha()[0]
-        imagehash = self._get_login_captcha()[1]
-        playload = {'imagestrig':imagestring,
-                    'imagehash':imagehash,
-                    'username':username,
-                    'password':password}
-        r = self.session.post(url,playload,timeout=6)
+    def login(self,username,password,captcha,url='https://hdhome.org/takelogin.php'):
+        imagestring = captcha[0]
+        imagehash = captcha[1]
+        playload = {'username':username,
+                    'password':password,
+                    'imagestrig':imagestring,
+                    'imagehash':imagehash}
+        logging.info(len(imagestring))
+        r = self.session.post(url,playload,timeout=5)
         logging.info('get {} code {}'.format(url,str(r.status_code)))
-        return self.is_logged_in(r)
+        return is_logged_in()
 
 
     def _get_login_captcha(self):
         url = 'https://hdhome.org/login.php'
-        r = self.session.get(url,timeout=6)
+        r = self.session.get(url,timeout=5)
         soup = BeautifulSoup(r.text,"html.parser")
-
 
         img = soup.find_all("img")
         for i in img:
             if 'image' in i['src']:
                 imgurl = 'https://hdhome.org/' + i['src']
         image = self.session.get(imgurl)
+        with open('/movie/captcha.png','wb') as f:
+            f.write(image.content)
         image = BytesIO(image.content)
-        image = CaptchaParse(image)
+        image = PreImage(image)
         imagestring = image.to_string()
 
         imagehash = soup.find("input",{"name":"imagehash"})
         assert imagehash and imagehash['value'],"there is no imagehash on this page"
         logging.info('imagehash: {}'.format(imagehash['value']))
-        
+
         return (imagestring,imagehash['value'])
 
-    def is_logged_in(self,r,url='https://hdhome.org/index.php'):
-        if r:
-            r = self.session.get(url,timeout=6)
+    def is_logged_in(self,url='https://hdhome.org/index.php'):
+        r = self.session.get(url)
         return 'Pls keep seeding' in r.text
 
     def sign(self):
         url = 'https://hdhome.org/attendance.php'
         self.session.headers.update({'referer':'https://hdhome.org/index.php'})
         self.session.headers.update({'upgrade-insecure-requests':'1'})
-        r = self.session.get(url,allow_redirects=False,timeout=6)
+        r = self.session.get(url,allow_redirects=False)
         logging.info('get {} code {}'.format(url,str(r.status_code)))
         return r
 
@@ -126,18 +129,22 @@ def main():
     username = 'hdhome'
     password = 'hdhome'
     hdh = HDHome()
-    for i in range(1,8):
-        time.sleep(randrange(5))
-        logging.info('{} times trying'.format(i))
-        hdh.login(username,password)
-        time.sleep(randrange(5))
-        r = hdh.sign()
-        if r.status_code == 200:
-            logging.info('sign success')
-            break
-        else:
-            logging.info('sign failure')
-            continue
+    captcha = hdh._get_login_captcha()
+    times = 1
+    while times < 8:
+        if len(captcha[0]) == 6:
+            time.sleep(randrange(5))
+            logging.info('{} times trying'.format(i))
+            hdh.login(username,password,captcha)
+            times += 1
+            time.sleep(randrange(5))
+            r = hdh.sign()
+            if r.status_code == 200:
+                logging.info('sign success')
+                break
+            else:
+                logging.info('sign failure')
+                continue
 
 if __name__ == '__main__':
     main()
