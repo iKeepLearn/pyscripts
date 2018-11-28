@@ -62,7 +62,6 @@ class CaptchaParse(object):
         image = self.delete_point()
         imagestring = pytesseract.image_to_string(image)
         imagestring = re.sub(regex,'',imagestring)
-        logging.info('imagestring: {}'.format(imagestring))
         return imagestring
 
 
@@ -85,6 +84,8 @@ class NexusPHP(object):
                     'username':username,
                     'password':password}
         r = self.session.post(url,playload,timeout=6)
+        logging.info('imagestring: {}'.format(imagestring))
+        logging.info('imagehash: {}'.format(imagehash))
         logging.info('get {} code {}'.format(url,str(r.status_code)))
         return self.is_logged_in()
 
@@ -106,10 +107,10 @@ class NexusPHP(object):
 
         imagehash = soup.find("input",{"name":"imagehash"})
         assert imagehash and imagehash['value'],"there is no imagehash on this page"
-        logging.info('imagehash: {}'.format(imagehash['value']))
         return (imagestring,imagehash['value'])
 
-    def is_logged_in(self,r):
+    def is_logged_in(self):
+        url = urljoin(self.url,'index.php')
         r = self.session.get(url,timeout=6)
         return 'Pls keep seeding' in r.text
 
@@ -127,22 +128,22 @@ def main():
     username = 'hdhome'
     password = 'hdhome'
     gzt = NexusPHP('https://pt.gztown.net')
-    captcha = gzt._get_loggin_captcha()
     times = 1
     while times < 8:
+        captcha = gzt._get_login_captcha()
         if len(captcha[0]) == 6:
-        time.sleep(randrange(5))
-        logging.info('{} times trying'.format(i))
-        gzt.login(username,password,captcha)
-        times += 1
-        time.sleep(randrange(5))
-        r = gzt.sign()
-        if r.status_code == 200:
-            logging.info('sign success')
-            break
-        else:
-            logging.info('sign failure')
-            continue
+            time.sleep(randrange(5))
+            logging.info('{} times trying'.format(times))
+            gzt.login(username,password,captcha)
+            times += 1
+            time.sleep(randrange(5))
+            r = gzt.sign()
+            if r.status_code == 200:
+                logging.info('sign success')
+                break
+            else:
+                logging.info('sign failure')
+                continue
 
 if __name__ == '__main__':
     main()
