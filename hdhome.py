@@ -63,7 +63,6 @@ class PreImage(object):
         image = self.delete_point()
         imagestring = pytesseract.image_to_string(image)
         imagestring = re.sub(regex,'',imagestring)
-        logging.info('imagestring: {}'.format(imagestring))
         return imagestring
 
 
@@ -85,8 +84,10 @@ class HDHome(object):
                     'imagehash':imagehash}
         logging.info(len(imagestring))
         r = self.session.post(url,playload,timeout=5)
+        logging.info('imagestring: {}'.format(imagestring))
+        logging.info('imagehash: {}'.format(imagehash))
         logging.info('get {} code {}'.format(url,str(r.status_code)))
-        return is_logged_in()
+        return self.is_logged_in()
 
 
     def _get_login_captcha(self):
@@ -107,7 +108,6 @@ class HDHome(object):
 
         imagehash = soup.find("input",{"name":"imagehash"})
         assert imagehash and imagehash['value'],"there is no imagehash on this page"
-        logging.info('imagehash: {}'.format(imagehash['value']))
 
         return (imagestring,imagehash['value'])
 
@@ -129,12 +129,12 @@ def main():
     username = 'hdhome'
     password = 'hdhome'
     hdh = HDHome()
-    captcha = hdh._get_login_captcha()
     times = 1
     while times < 8:
+        captcha = hdh._get_login_captcha()
         if len(captcha[0]) == 6:
             time.sleep(randrange(5))
-            logging.info('{} times trying'.format(i))
+            logging.info('{} times trying'.format(times))
             hdh.login(username,password,captcha)
             times += 1
             time.sleep(randrange(5))
