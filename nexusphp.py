@@ -76,18 +76,17 @@ class NexusPHP(object):
         self.session.headers.update({'origin':self.url})
         self.session.headers.update({'referer':urljoin(self.url,'login.php')})
 
-    def login(self,username,password):
+    def login(self,username,password,captcha):
         url=urljoin(self.url,'takelogin.php')
-        imagestring = self._get_login_captcha()[0]
-        imagehash = self._get_login_captcha()[1]
+        imagestring = captcha[0]
+        imagehash = captcha[1]
         playload = {'imagestrig':imagestring,
                     'imagehash':imagehash,
                     'username':username,
                     'password':password}
-        if len(imagestring) == 6:
-            r = self.session.post(url,playload,timeout=6)
-            logging.info('get {} code {}'.format(url,str(r.status_code)))
-        return self.is_logged_in(r)
+        r = self.session.post(url,playload,timeout=6)
+        logging.info('get {} code {}'.format(url,str(r.status_code)))
+        return self.is_logged_in()
 
 
     def _get_login_captcha(self):
@@ -111,9 +110,7 @@ class NexusPHP(object):
         return (imagestring,imagehash['value'])
 
     def is_logged_in(self,r):
-        url=urljoin(self.url,'index.php')
-        if r:
-            r = self.session.get(url,timeout=6)
+        r = self.session.get(url,timeout=6)
         return 'Pls keep seeding' in r.text
 
     def sign(self):
@@ -130,10 +127,14 @@ def main():
     username = 'hdhome'
     password = 'hdhome'
     gzt = NexusPHP('https://pt.gztown.net')
-    for i in range(1,8):
+    captcha = gzt._get_loggin_captcha()
+    times = 1
+    while times < 8:
+        if len(captcha[0]) == 6:
         time.sleep(randrange(5))
         logging.info('{} times trying'.format(i))
-        gzt.login(username,password)
+        gzt.login(username,password,captcha)
+        times += 1
         time.sleep(randrange(5))
         r = gzt.sign()
         if r.status_code == 200:
