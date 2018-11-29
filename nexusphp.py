@@ -79,10 +79,10 @@ class NexusPHP(object):
         url=urljoin(self.url,'takelogin.php')
         imagestring = captcha[0]
         imagehash = captcha[1]
-        playload = {'imagestrig':imagestring,
-                    'imagehash':imagehash,
-                    'username':username,
-                    'password':password}
+        playload = {'username':username,
+                    'password':password,
+                    'imagestring':imagestring,
+                    'imagehash':imagehash,}
         r = self.session.post(url,playload,timeout=6)
         logging.info('imagestring: {}'.format(imagestring))
         logging.info('imagehash: {}'.format(imagehash))
