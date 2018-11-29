@@ -80,7 +80,7 @@ class HDHome(object):
         imagehash = captcha[1]
         playload = {'username':username,
                     'password':password,
-                    'imagestrig':imagestring,
+                    'imagestring':imagestring,
                     'imagehash':imagehash}
         logging.info(len(imagestring))
         r = self.session.post(url,playload,timeout=5)
