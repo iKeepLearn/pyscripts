@@ -57,7 +57,7 @@ class PreImage(object):
 
     def to_string(self):
 
-        regex = r"[\'\"\*~!@#$%^&\+\\n\\r;:,\\\/\ \_\-\)\(’‘“”]"
+        regex = r"[\W\_]"
 
         image = self.image_to_bin()
         image = self.delete_point()
